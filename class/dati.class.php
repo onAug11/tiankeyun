@@ -6,13 +6,13 @@ class Dati {
     }
     
     public function dati($username, $password) {
-        $user_info = $this->get_user_info($username, $password);
+        $user_info = $this->getUserinfo($username, $password);
         $userOID = $user_info['uid'];
         $unit_name = $user_info['unit_name'];
         $depart_name = $user_info['depart_name'];
         $uname = $user_info['uname'];
         $number = $user_info['number'];
-        $queryExaminationList = json_decode($this->post_url("https://api2.tfhulian.com/admis/confidentialExamination/queryExaminationList.rest", "userOID=$userOID"), true);
+        $queryExaminationList = json_decode($this->postUrl("https://api2.tfhulian.com/admis/confidentialExamination/queryExaminationList.rest", "userOID=$userOID"), true);
         $questions = $queryExaminationList['data']['questions'];
         if ($questions) {
             $exam_info = [];
@@ -26,7 +26,7 @@ class Dati {
                 );
             }
             $exam_info = json_encode($exam_info);
-            $getResultsOfExaminationQuestions = json_decode($this->post_url("https://api2.tfhulian.com/admis/confidentialExamination/getResultsOfExaminationQuestions.rest", "examInfo=$exam_info&examTime=60&userOID=$userOID"), true);
+            $getResultsOfExaminationQuestions = json_decode($this->postUrl("https://api2.tfhulian.com/admis/confidentialExamination/getResultsOfExaminationQuestions.rest", "examInfo=$exam_info&examTime=60&userOID=$userOID"), true);
             
             $data = array(
                 'unit_name' => $unit_name,
@@ -45,18 +45,18 @@ class Dati {
         return $res;
     }
     
-    private function get_user_info($username, $password) {
-        $Authorization = $this->get_Authorization($username, $password);
+    private function getUserinfo($username, $password) {
+        $Authorization = $this->getAuthorization($username, $password);
         $header[] = 'Authorization:'.$Authorization; 
         $header[] = 'client:ios'; 
         $header[] = 'edition:9999'; 
-        $detail = json_decode($this->post_url('https://api2.tfhulian.com/v_309/users/detail', null, $header), true);
+        $detail = json_decode($this->postUrl('https://api2.tfhulian.com/v_309/users/detail', null, $header), true);
         $user_info = $detail['data'];
         return $user_info;
     }
     
-    private function get_Authorization($username, $password) {
-        $token = json_decode($this->post_url('https://api2.tfhulian.com/oauth2/token', 'client_id=testclient&client_secret=testpass&grant_type=password&password='.$password.'&username='.$username), true);
+    private function getAuthorization($username, $password) {
+        $token = json_decode($this->postUrl('https://api2.tfhulian.com/oauth2/token', 'client_id=testclient&client_secret=testpass&grant_type=password&password='.$password.'&username='.$username), true);
         if ($token['code'] == 200) {
             $data = $token['data'];
             $Authorization = $data['token_type'].' '.$data['access_token'];
@@ -72,7 +72,7 @@ class Dati {
         }
     }
     
-    private function post_url($url, $data = false, $header = false) {
+    private function postUrl($url, $data = false, $header = false) {
         $curl = curl_init(); // 启动一个CURL会话
         curl_setopt($curl, CURLOPT_URL, $url); // 要访问的地址
         curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, FALSE); // 对认证证书来源的检查
